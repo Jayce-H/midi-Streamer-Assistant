@@ -1,0 +1,19 @@
+{
+  "assets": [],
+  "build": {
+    "build_id": "midiAssistant",
+    "build_number": 1,
+    "build_time": 0
+  },
+  "useFeatures": [],
+  "icon": "res/logo.png",
+  "launchConfig": {
+    "hideLogs": false
+  },
+  "main": "main.js",
+  "name": "midi串流助手",
+  "packageName": "com.midiStreamer.assistant",
+  "scripts": {},
+  "versionCode": 1,
+  "versionName": "1.0.0"
+}
