@@ -6,9 +6,13 @@
 运行环境:AutoX(Auto.js的一个fork). [apk下载](https://github.com/kkevsekk1/AutoX/releases)/[项目主页](https://github.com/kkevsekk1/AutoX).  
 注意: 不支持收费版Auto.js  
 
-下载地址：右侧[releases](https://github.com/Jayce-H/midi-Streamer-Assistant/releases)下载最新版的midiStreamerAssistant.rar
+源文件下载：右侧[releases](https://github.com/Jayce-H/midi-Streamer-Assistant/releases)下载最新版的[midiStreamerAssistant.rar](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/midiStreamerAssistant.1.0.0.rar)
 
 ## 使用说明
   - 通过上面的链接下载运行环境apk文件，安装AutoX.js
   - 将下载的压缩包(midiStreamerAssistant.rar)解压到手机内部存储根目录名叫“脚本”的文件夹中， 例如: 脚本/midi串流助手 (/sdcard/脚本/midi串流助手/)，没有此文件夹需手动创建
   - 在手机中打开autoX.js软件，授予 无障碍权限 以及 悬浮窗权限 ，并运行midi串流助手项目
+
+# 懒人包
+无需下载AutoX.js及源文件，使用编译完成的安装包
+下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI.apk)文件直接使用
