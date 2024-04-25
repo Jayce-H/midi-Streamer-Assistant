@@ -15,4 +15,5 @@
 
 # 懒人包
 无需下载AutoX.js及源文件，使用编译完成的安装包
+
 下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI.apk)文件直接使用
