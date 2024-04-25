@@ -1,12 +1,13 @@
 # midi串流助手
 使用midi设备连接手机演奏游戏内的乐器，支持多种游戏
 
-基于 https://github.com/happyme531/clxTools 的删改版本，只保留了midi串流部分
-
-运行环境:AutoX(Auto.js的一个fork). [apk下载](https://github.com/kkevsekk1/AutoX/releases)/[项目主页](https://github.com/kkevsekk1/AutoX).  
-注意: 不支持收费版Auto.js  
+- 基于 https://github.com/happyme531/clxTools 的删改版本，只保留了midi串流部分
+- 运行环境:AutoX(Auto.js的一个fork). [apk下载](https://github.com/kkevsekk1/AutoX/releases)/[项目主页](https://github.com/kkevsekk1/AutoX).  
+- 注意: 不支持收费版Auto.js  
 
 源文件下载：右侧[releases](https://github.com/Jayce-H/midi-Streamer-Assistant/releases)下载最新版的[midiStreamerAssistant.rar](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/midiStreamerAssistant.1.0.0.rar)
+
+如无法下载，可使用[蓝奏云下载](https://jayceh.lanzoub.com/b0swomphe)，密码：midi  
 
 ## 使用说明
   - 通过上面的链接下载运行环境apk文件，安装AutoX.js
@@ -15,5 +16,7 @@
 
 # 懒人包
 无需下载AutoX.js及源文件，使用编译完成的安装包
+- 下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI.apk)文件，授予相关权限后直接使用
+- 如无法下载，可使用[蓝奏云下载](https://jayceh.lanzoub.com/b0swomphe)，密码：midi  
 
-下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI.apk)文件直接使用
+## 演示视频（待添加）
