@@ -5,7 +5,7 @@
 - 运行环境:AutoX(Auto.js的一个fork). [apk下载](https://github.com/kkevsekk1/AutoX/releases)/[项目主页](https://github.com/kkevsekk1/AutoX).  
 - 注意: 不支持收费版Auto.js  
 
-源文件下载：右侧[releases](https://github.com/Jayce-H/midi-Streamer-Assistant/releases)下载最新版的[midiStreamerAssistant.rar](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/midiStreamerAssistant.1.0.0.rar)
+源文件下载：右侧[releases](https://github.com/Jayce-H/midi-Streamer-Assistant/releases)下载最新版的[midiStreamerAssistant.rar](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/midiStreamerAssistant.1.0.0.zip)
 
 如无法下载，可使用[蓝奏云下载](https://jayceh.lanzoub.com/b0swomphe)，密码：midi  
 
