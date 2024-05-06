@@ -21,4 +21,5 @@
 - 如midi设备支持蓝牙连接，可下载安装蓝牙midi插件[MIDI+BTLE.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI+BTLE.apk)进行蓝牙连接
 - 如无法下载，可使用[蓝奏云](https://jayceh.lanzoub.com/b0swomphe)下载懒人包，密码：midi
 
-## 演示视频（待添加）
+## 演示视频
+https://www.bilibili.com/video/BV1iH4y1V7oy
