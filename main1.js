@@ -546,7 +546,7 @@ function main() {
                 }else {
                     var i = dialogs.select("口袋琴自定义坐标", ["已关闭  点击开启","定位","请将游戏设置为 口袋琴自定义15键"]);
                     if (i == 0) {
-                        if (cachedKeyPos == null) {
+                        if ((cachedKeyPos = readGlobalConfig("diyPos",null)) == null) {
                             diypos();
                         }
                         diy = true;
@@ -666,6 +666,7 @@ function diypos(){
         keyPos.push([Math.round(pos[i].x), Math.round(pos[i].y)]);
     }
     cachedKeyPos = keyPos;
+    setGlobalConfig("diyPos",cachedKeyPos);
 }
 
 function start() {
