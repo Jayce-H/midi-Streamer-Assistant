@@ -13,14 +13,14 @@ function getPosInteractive(promptText) {
     //提示和确认按钮的框
     let confirmWindow = floaty.rawWindow(
         <frame gravity="left|top">
-            <vertical bg="#7fffff7f">
+            <vertical bg="#88ffffff">
                 <text id="promptText" text="" textSize="14sp" />
                 <button id="confirmBtn" style="Widget.AppCompat.Button.Colored" text="确定" />
                 <button id="cancelBtn" style="Widget.AppCompat.Button.Colored" text="取消" />
             </vertical>
         </frame>
     );
-    confirmWindow.setPosition(deviceWidth / 3, 0);
+    confirmWindow.setPosition(deviceWidth / 4, deviceHeight /2);
     confirmWindow.setTouchable(true);
 
     let fullScreenWindow = floaty.rawWindow(<canvas id="canv" w="*" h="*" />);
