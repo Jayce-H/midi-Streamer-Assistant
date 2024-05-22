@@ -325,7 +325,7 @@ function main() {
      * @type {any}
      */
     let controlWindow = floaty.window(
-        <frame gravity="left|top" w="90dp" h="150dp" margin="0dp" id="controlWindowFrame" visibility="gone">
+        <frame gravity="left|top" w="90dp" h="50dp" margin="0dp" id="controlWindowFrame" visibility="gone">
             <vertical bg="#55ffffff" w="*" h="auto" margin="0dp">
                 <horizontal w="*" h="auto" margin="0dp">
                     <text id="musicTitleText" bg="#55ffffff" text="(点击调整位置大小)" ellipsize="marquee" singleLine="true" layout_gravity="left" textSize="14sp" margin="0 0 3 0" layout_weight="1" />
@@ -362,10 +362,10 @@ function main() {
     });
 
     //悬浮窗位置/大小调节
-    let controlWindowPosition = readGlobalConfig("controlWindowPosition", [device.width / 3, 0]);
+    let controlWindowPosition = readGlobalConfig("controlWindowPosition", [device.width / 4, device.height / 5 ]);
     //避免悬浮窗被屏幕边框挡住
     controlWindow.setPosition(controlWindowPosition[0], controlWindowPosition[1]);
-    let controlWindowSize = readGlobalConfig("controlWindowSize", [Math.max(device.width, device.height) * 2 / 5, -2]);
+    let controlWindowSize = readGlobalConfig("controlWindowSize", [-2, -2]);
     controlWindow.setSize(controlWindowSize[0], controlWindowSize[1]);
     //controlWindow.setTouchable(true);
 
@@ -375,8 +375,8 @@ function main() {
         let now = new Date().getTime();
         if (now - controlWindowLastClickTime < 500) {
             toast("重置悬浮窗大小与位置");
-            controlWindow.setSize(device.width / 2, -2);
-            controlWindow.setPosition(device.width / 3, 40);
+            controlWindow.setSize(-2, -2);
+            controlWindow.setPosition(device.width / 4, device.height / 5);
         }
         controlWindowLastClickTime = now;
 
@@ -392,47 +392,6 @@ function main() {
     });
 
     let visualizerWindowRequestClose = false;
-
-    //可视化悬浮窗口
-    const createVisualizerWindow = function () {
-        let visualizerWindow = floaty.window(
-            <canvas id="canv" w="*" h="*" />
-        );
-        let visualizerWindowPosition = readGlobalConfig("visualizerWindowPosition", [100, 100]);
-        visualizerWindow.setPosition(visualizerWindowPosition[0], visualizerWindowPosition[1]);
-        let visualizerWindowSize = readGlobalConfig("visualizerWindowSize", [device.width / 2, device.height / 2]);
-        visualizerWindow.setSize(visualizerWindowSize[0], visualizerWindowSize[1]);
-        visualizerWindow.canv.on("draw", function (canvas) {
-            visualizer.draw(canvas);
-            //如果在绘制时窗口被关闭, app会直接崩溃, 所以这里要等待一下 
-            if (visualizerWindowRequestClose) {
-                sleep(1000);
-            }
-        });
-        //上一次点击的时间
-        let visualizerLastClickTime = 0;
-
-        //触摸事件(这里on("click",...) 又失灵了, AutoXjs的文档真是够烂的)
-        visualizerWindow.canv.click(function () {
-            let now = new Date().getTime();
-            if (now - visualizerLastClickTime < 500) {
-                toast("重置悬浮窗大小与位置");
-                visualizerWindow.setSize(device.width * 2 / 3, device.height * 2 / 3);
-                visualizerWindow.setPosition(100, 100);
-            }
-            visualizerLastClickTime = now;
-            let adjEnabled = visualizerWindow.isAdjustEnabled();
-            visualizerWindow.setAdjustEnabled(!adjEnabled);
-            if (adjEnabled) {
-                //更新大小 (使用窗口上的拖动手柄缩放时, 窗口的大小实际上是不会变的, 所以这里要手动更新)
-                visualizerWindow.setSize(visualizerWindow.getWidth(), visualizerWindow.getHeight());
-                //保存当前位置与大小
-                setGlobalConfig("visualizerWindowPosition", [visualizerWindow.getX(), visualizerWindow.getY()]);
-                setGlobalConfig("visualizerWindowSize", [visualizerWindow.getWidth(), visualizerWindow.getHeight()]);
-            }
-        });
-        return visualizerWindow;
-    }
 
     function visualizerWindowClose() {
         if (visualizerWindow == null) return;
@@ -461,7 +420,7 @@ function main() {
                 "📍设置坐标",
                 "📲 MIDI串流演奏",
                 "⚙️检查权限",
-                "🔍自定义坐标（口袋琴专属）",
+                "🔍口袋琴自定义",
             ])) {
             case -1:
                 break;
@@ -472,6 +431,12 @@ function main() {
                 if (sel == -1) {
                     toastLog("设置没有改变");
                     break;
+                }
+                else if (sel == 15){
+                    diy = true;
+                    console.log("口袋琴自定义");
+                }else {
+                    diy = false;
                 }
                 let configName = configList[sel];
                 setGlobalConfig("activeConfigName", configName);
@@ -532,31 +497,36 @@ function main() {
                 checkEnableAccessbility();
                 break;
             case 4://diy
-                if (diy) {
-                    var i = dialogs.select("口袋琴自定义坐标", ["已开启  点击关闭","定位","请将游戏设置为 口袋琴自定义15键"]);
-                    if (i == 0) {
-                        diy = false;
-                        console.log("自定义已关闭");
-                        gameProfile.setKeyPosition([0, 0], [0, 0]);
-                    } else if (i == 1) {
-                        diypos();
-                    } else {
-                        console.log("取消选择");
-                    }
-                }else {
-                    var i = dialogs.select("口袋琴自定义坐标", ["已关闭  点击开启","定位","请将游戏设置为 口袋琴自定义15键"]);
-                    if (i == 0) {
-                        if ((cachedKeyPos = readGlobalConfig("diyPos",null)) == null) {
-                            diypos();
-                        }
-                        diy = true;
-                        console.log("自定义已开启");
-                    } else if (i == 1) {
-                        diypos();
-                    } else {
-                        console.log("取消选择");
-                    }
+                //切换配置至口袋琴自定义
+                if (diy == false ){
+                    setGlobalConfig("activeConfigName", "口袋琴自定义");
+                    setGlobalConfig("lastConfigName", "口袋琴自定义");
+                    gameProfile.setConfigByName("口袋琴自定义");
+                    console.log("目标游戏已设置为: 口袋琴自定义");
+                    gameProfile.setCurrentVariantDefault();
+                    setGlobalConfig("lastVariantName", gameProfile.getCurrentVariantTypeName());
+                    gameProfile.setCurrentKeyLayoutDefault();
+                    setGlobalConfig("lastKeyTypeName", gameProfile.getCurrentKeyLayoutTypeName());
+                    diy = true;
                 }
+                console.log("口袋琴自定义");
+
+                if ((cachedKeyPos = readGlobalConfig("diyPos",null)) == null) {//首次使用初始化
+                    cachedKeyPos = gameProfile.getAllKeyPositions();
+                }
+                let diyx = (dialogs.select("自定义坐标", ["第一行","第二行","第三行"]));
+                if (diyx == -1 ){
+                    console.log("取消选择");
+                    break;
+                }else {
+                    let diyy = (dialogs.select("自定义坐标", ["1","2","3","4","5"]));
+                    if (diyy == -1){
+                        console.log("取消选择");
+                        break;
+                    }
+                    diypos(diyx , diyy);
+                }
+                console.log("自定义完成");
                 break;
         };
         titleStr = "当前配置: " + getTargetTriple();
@@ -583,10 +553,12 @@ function main() {
             const STATUS_NOTE_ON = 0x90;
             let keyList = new Array();
             for (let data of datas) {
+                console.log("data：    " + data);
                 let cmd = data[0] & STATUS_COMMAND_MASK;
-                //console.log("cmd: " + cmd);
+                //console.log("cmd：    " + cmd);
                 if (cmd == STATUS_NOTE_ON && data[2] != 0) { // velocity != 0
                     let key = gameProfile.getKeyByPitch(data[1]);
+                    console.log("key：    " + key);
                     if (key != -1 && keyList.indexOf(key) === -1) keyList.push(key);
                     midiInputStreamingNoteCount++;
                 }
@@ -594,10 +566,10 @@ function main() {
             let gestureList = new Array();
             for (let j = 0; j < keyList.length; j++) { //遍历这个数组
                 let key = keyList[j];
-                if (diy){
-                    gestureList.push([0, 5, cachedKeyPos[key]]); 
+                if (diy && cachedKeyPos != null ){//自定义开启，且有改过坐标，否则默认位置
+                    gestureList.push([0, 50, cachedKeyPos[key]]); 
                 }else {
-                    gestureList.push([0, 5, gameProfile.getKeyPosition(key)]); 
+                    gestureList.push([0, 50, gameProfile.getKeyPosition(key)]); 
                 }
             };
             if (gestureList.length > 10) gestureList.splice(9, gestureList.length - 10); //手势最多同时只能执行10个
@@ -656,16 +628,13 @@ function main() {
 }
 
 
-function diypos(){
-    let pos = [];
-    let keyPos = [];
-    let indexkey = 0;
-    for (let i = 0; i < 15; i++){
-        indexkey = i + 1;
-        pos[i] = getPosInteractive("定位第" + indexkey + "个按键");
-        keyPos.push([Math.round(pos[i].x), Math.round(pos[i].y)]);
-    }
-    cachedKeyPos = keyPos;
+function diypos(diyx,diyy){
+    let indexkey =10- diyx * 5 + diyy;
+    diyx++;
+    diyy++;
+    let pos = getPosInteractive("定位第" + diyx + "行 第" + diyy +"个按键");
+    cachedKeyPos[indexkey] = [Math.round(pos.x), Math.round(pos.y)];
+    console.log("自定义 第" + diyx + "行第" + diyy +"个按键 坐标：" + cachedKeyPos[indexkey])
     setGlobalConfig("diyPos",cachedKeyPos);
 }
 
