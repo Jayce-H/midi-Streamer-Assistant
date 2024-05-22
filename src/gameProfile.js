@@ -362,6 +362,26 @@ const noteKeyMaps = {
         "A4": 13,
         "B4": 14,
     },
+    "diy_3x5": {
+        // C4 D4 E4 F4 G4 
+        // A4 B4 C5 D5 E5 
+        // F5 G5 A5 B5 C6
+        "F5": 1,
+        "G5": 2,
+        "A5": 3,
+        "B5": 4,
+        "C6": 5,
+        "A4": 6,
+        "B4": 7,
+        "C5": 8,
+        "D5": 9,
+        "E5": 10,
+        "C4": 11,
+        "D4": 12,
+        "E4": 13,
+        "F4": 14,
+        "G4": 15,        
+    },
 }
 
 
@@ -580,7 +600,14 @@ const keyLayouts = {
         column: 13,
         noteKeyMap: noteKeyMaps.mrzh_3x12,
     },
-
+    "diy_3x5": {   //口袋琴自定义3x5
+        displayName: "15键",
+        type: KeyLayoutTypes.grid,
+        locator: KeyLocatorTypes.left_top_right_bottom,
+        row: 3,
+        column: 5,
+        noteKeyMap: noteKeyMaps.diy_3x5,
+    },
 };
 
 //光遇: 乐曲调式对应的地图所在位置
@@ -1027,18 +1054,17 @@ const PreDefinedGameConfigs = [
         packageNamePart: [],
     }),
     new GameConfig({
-        gameType: "自定义2",
-        gameName: "自定义2",
-        keyTypes: ["generic_3x7", "generic_3x12"],
+        gameType: "口袋琴自定义",
+        gameName: "口袋琴自定义",
+        keyTypes: ["diy_3x5"],
         keyLocators: new Map([
-            ["generic_3x7", [[0, 0], [0, 0]]],
-            ["generic_3x12", [[0, 0], [0, 0]]],
+            ["diy_3x5", [[0, 0], [0, 0]]],
         ]),
         variants: [
             defaultVariantConfig
         ],
         sameKeyMinInterval: 0,
-        packageNamePart: [],
+        packageNamePart: ["easyplay1"],
     }),
 ];
 
