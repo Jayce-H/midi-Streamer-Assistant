@@ -49,6 +49,13 @@ const MusicLoaderDataType = {
     KeySequenceHumanFriendly: "KeySequenceHumanFriendly",
 };
 
+
+/**
+     * @type {Array<pos2d>?}
+     * @description 按键位置数组(从下到上, 从左到右)
+     */
+var cachedKeyPos = null;
+
 /**
  * @brief 加载配置文件
  */
@@ -443,14 +450,19 @@ function main() {
         exit();
     }
 
+
+    let diy = false;//diy
+
     evt.on("globalConfigBtnClick", () => {
         for (let player of selectedPlayers)
             player.pause();
-        switch (dialogs.select("其它选项...",
+        switch (dialogs.select("设置",
             ["🎮选择游戏/乐器",
                 "📍设置坐标",
                 "📲 MIDI串流演奏",
-                "检查权限",])) {
+                "⚙️检查权限",
+                "🔍自定义坐标（口袋琴专属）",
+            ])) {
             case -1:
                 break;
             case 0:
@@ -519,6 +531,33 @@ function main() {
             case 3://权限
                 checkEnableAccessbility();
                 break;
+            case 4://diy
+                if (diy) {
+                    var i = dialogs.select("口袋琴自定义坐标", ["已开启  点击关闭","定位","请将游戏设置为 口袋琴自定义15键"]);
+                    if (i == 0) {
+                        diy = false;
+                        console.log("自定义已关闭");
+                        gameProfile.setKeyPosition([0, 0], [0, 0]);
+                    } else if (i == 1) {
+                        diypos();
+                    } else {
+                        console.log("取消选择");
+                    }
+                }else {
+                    var i = dialogs.select("口袋琴自定义坐标", ["已关闭  点击开启","定位","请将游戏设置为 口袋琴自定义15键"]);
+                    if (i == 0) {
+                        if ((cachedKeyPos = readGlobalConfig("diyPos",null)) == null) {
+                            diypos();
+                        }
+                        diy = true;
+                        console.log("自定义已开启");
+                    } else if (i == 1) {
+                        diypos();
+                    } else {
+                        console.log("取消选择");
+                    }
+                }
+                break;
         };
         titleStr = "当前配置: " + getTargetTriple();
         ui.run(() => {
@@ -555,7 +594,11 @@ function main() {
             let gestureList = new Array();
             for (let j = 0; j < keyList.length; j++) { //遍历这个数组
                 let key = keyList[j];
-                gestureList.push([0, 5, gameProfile.getKeyPosition(key)]); 
+                if (diy){
+                    gestureList.push([0, 5, cachedKeyPos[key]]); 
+                }else {
+                    gestureList.push([0, 5, gameProfile.getKeyPosition(key)]); 
+                }
             };
             if (gestureList.length > 10) gestureList.splice(9, gestureList.length - 10); //手势最多同时只能执行10个
 
@@ -610,6 +653,20 @@ function main() {
             return true;
         });
     fb.show();
+}
+
+
+function diypos(){
+    let pos = [];
+    let keyPos = [];
+    let indexkey = 0;
+    for (let i = 0; i < 15; i++){
+        indexkey = i + 1;
+        pos[i] = getPosInteractive("定位第" + indexkey + "个按键");
+        keyPos.push([Math.round(pos[i].x), Math.round(pos[i].y)]);
+    }
+    cachedKeyPos = keyPos;
+    setGlobalConfig("diyPos",cachedKeyPos);
 }
 
 function start() {
