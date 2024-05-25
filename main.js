@@ -54,7 +54,9 @@ const MusicLoaderDataType = {
      * @type {Array<pos2d>?}
      * @description 按键位置数组(从下到上, 从左到右)
      */
-var cachedKeyPos = null;
+var cachedKeyPos = null;//自定义坐标的数值
+
+var keyStates = new Map();//实时保存midi键按下弹起状态，长按用
 
 /**
  * @brief 加载配置文件
@@ -313,7 +315,6 @@ function main() {
     let titleStr = "点击调整位置大小";
     console.info(titleStr);
     let visualizerWindow = null;
-    let midiInputStreamingNoteCount = 0;
     /**
      * @type {Array<import("./src/players").PlayerBase>}
      */
@@ -411,6 +412,9 @@ function main() {
 
 
     let diy = false;//diy
+    let diybool = false;//延音开关
+    var diytime = 20;//默认10ms
+    var diysleeptime = 0;//默认5ms
 
     evt.on("globalConfigBtnClick", () => {
         for (let player of selectedPlayers)
@@ -421,6 +425,7 @@ function main() {
                 "📲 MIDI串流演奏",
                 "⚙️检查权限",
                 "🔍口袋琴自定义",
+                "⏳延音设置",
             ])) {
             case -1:
                 break;
@@ -528,6 +533,56 @@ function main() {
                 }
                 console.log("自定义完成");
                 break;
+            case 5://延音开关 自定义延音频率以适配不同游戏 及 防止低配手机卡顿
+                if (diybool){
+                    let sel =(dialogs.select("延音设置",["🔴已开启","高级选项"]));
+                    if (sel == 0){
+                        diybool = false;
+                        break;
+                    }else if (sel == 1){
+                        let sel =(dialogs.select("高级选项",["频率时长：" + diytime + "ms","延迟：" + diysleeptime + "ms"]))
+                        if (sel == 0){
+                            diytime = dialogs.input("断音调低 建议范围：5-100" , diytime);
+                            //输入非整型会报错，待完善diytime = diytime.replace(/[^\d]/g, "");//正则表达式过滤掉非数字字符
+                            console.log("修改频率为" + diytime + "ms");
+                            break;
+                        }else if (sel ==1){
+                            diysleeptime = dialogs.input("卡顿调高 断音调低 建议范围：0-50" , diysleeptime);
+                            console.log("修改延迟为" + diysleeptime + "ms");
+                            break;
+                        }else {
+                            console.log("取消选择");
+                            break;
+                        }
+                    }else {
+                        console.log("取消选择");
+                        break;
+                    }
+                }else {
+                    let sel =(dialogs.select("延音设置",["⭕已关闭","高级选项"]));
+                    if (sel == 0){
+                        diybool = true;
+                        break;
+                    }else if (sel == 1){
+                        let sel =(dialogs.select("高级选项",["频率时长：" + diytime + "ms","延迟：" + diysleeptime + "ms"]))
+                        if (sel == 0){
+                            diytime = dialogs.input("断音调低 建议范围：5-100" , diytime);
+                            //输入非整型会报错，待完善diytime = diytime.replace(/[^\d]/g, "");//正则表达式过滤掉非数字字符
+                            console.log("修改频率为" + diytime + "ms");
+                            break;
+                        }else if (sel ==1){
+                            diysleeptime = dialogs.input("卡顿调高 断音调低 建议范围：0-50" , diysleeptime);
+                            console.log("修改延迟为" + diysleeptime + "ms");
+                            break;
+                        }else {
+                            console.log("取消选择");
+                            break;
+                        }
+                    }else {
+                        console.log("取消选择");
+                        break;
+                    }
+                }
         };
         titleStr = "当前配置: " + getTargetTriple();
         ui.run(() => {
@@ -545,7 +600,6 @@ function main() {
         ui.run(() => {
             controlWindow.musicTitleText.setText("MIDI串流中...");
         });
-        midiInputStreamingNoteCount = 0;
         stream.onDataReceived(function (datas) {
             const STATUS_COMMAND_MASK = 0xF0;
             const STATUS_CHANNEL_MASK = 0x0F;
@@ -556,34 +610,79 @@ function main() {
                 console.log("data：    " + data);
                 let cmd = data[0] & STATUS_COMMAND_MASK;
                 //console.log("cmd：    " + cmd);
-                if (cmd == STATUS_NOTE_ON && data[2] != 0) { // velocity != 0
-                    let key = gameProfile.getKeyByPitch(data[1]);
-                    console.log("key：    " + key);
+                let key = gameProfile.getKeyByPitch(data[1]);
+                console.log("key：    " + key);
+                switch(cmd){
+                    case 144:
+                        keyStates.set(key,true);
+                        console.log("key：" + key + " TRUE !");
+                        break;
+                    case 128:
+                        keyStates.set(key,false);
+                        console.log("key：" + key + " FALSE");
+                        break;
+                }
+                if (diybool == false && cmd == STATUS_NOTE_ON && data[2] != 0) { // velocity != 0
                     if (key != -1 && keyList.indexOf(key) === -1) keyList.push(key);
-                    midiInputStreamingNoteCount++;
                 }
             }
-            let gestureList = new Array();
-            for (let j = 0; j < keyList.length; j++) { //遍历这个数组
-                let key = keyList[j];
-                if (diy && cachedKeyPos != null ){//自定义开启，且有改过坐标，否则默认位置
-                    gestureList.push([0, 50, cachedKeyPos[key]]); 
-                }else {
-                    gestureList.push([0, 50, gameProfile.getKeyPosition(key)]); 
-                }
-            };
-            if (gestureList.length > 10) gestureList.splice(9, gestureList.length - 10); //手势最多同时只能执行10个
+            if (diybool ==false){
+                let gestureList = new Array();
+                for (let j = 0; j < keyList.length; j++) { //遍历这个数组
+                    let key = keyList[j];
+                    if (diy && cachedKeyPos != null ){//自定义开启，且有改过坐标，否则默认位置
+                        gestureList.push([0, 50, cachedKeyPos[key]]); 
+                    }else {
+                        gestureList.push([0, 50, gameProfile.getKeyPosition(key)]); 
+                    }
+                };
+                if (gestureList.length > 10) gestureList.splice(9, gestureList.length - 10); //手势最多同时只能执行10个
 
-            if (gestureList.length != 0) {
-                for (let player of selectedPlayers)
-                    player.exec(gestureList);
-            };
+                if (gestureList.length != 0) {
+                    for (let player of selectedPlayers)
+                        player.exec(gestureList);
+                };
+            }
         });
         evt.on("hideBtnClick", () => {
             stream.close();
             controlWindowVisible = false;
             controlWindowSetVisibility(false);
         });
+
+        threads.start(function(){
+            while (true){//此线程一旦启动则不能关闭，否则线程失效且会重复启动
+                if (diybool){
+                    console.log(".........");
+                    let keyList = new Array();
+                    // 遍历键状态
+                    keyStates.forEach((isPressed, keyNumber) => {
+                    if (keyNumber != -1 && isPressed == true && keyList.indexOf(keyNumber) === -1) keyList.push(keyNumber);
+                    //console.log("按键 " + keyNumber + "：" + (isPressed ? "按下" : "        释放"));
+                    });
+                    let gestureList = new Array();
+                    for (let j = 0; j < keyList.length; j++) { //遍历这个数组
+                        let key = keyList[j];
+                        if (diy && cachedKeyPos != null ){//自定义开启，且有改过坐标，否则默认位置
+                            gestureList.push([0, diytime, cachedKeyPos[key]]); 
+                        }else {
+                            gestureList.push([0, diytime, gameProfile.getKeyPosition(key)]); 
+                        }
+                    };
+                    if (gestureList.length > 10) gestureList.splice(9, gestureList.length - 10); //手势最多同时只能执行10个
+    
+                    if (gestureList.length != 0) {
+                        for (let player of selectedPlayers)
+                            player.exec(gestureList);
+                    };
+
+                    sleep(diysleeptime);
+                }else {
+                    sleep(500);
+                }
+            }
+        });
+
     });
     evt.on("hideBtnClick", () => {
         controlWindowVisible = false;
