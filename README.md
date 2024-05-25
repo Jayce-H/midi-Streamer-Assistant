@@ -5,7 +5,7 @@
 - 运行环境:AutoX(Auto.js的一个fork). [apk下载](https://github.com/kkevsekk1/AutoX/releases)/[项目主页](https://github.com/kkevsekk1/AutoX).  
 - 注意: 不支持收费版Auto.js  
 
-源文件下载：右侧[releases](https://github.com/Jayce-H/midi-Streamer-Assistant/releases)下载最新版的[midiStreamerAssistant.zip](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/midiStreamerAssistant.1.0.0.zip)
+源文件下载：右侧[releases](https://github.com/Jayce-H/midi-Streamer-Assistant/releases)下载最新版的main.js以及原版的[midiStreamerAssistant.zip](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/midiStreamerAssistant.1.0.0.zip)将main.js修改名称后替换原版
 
 如无法下载，可使用[蓝奏云](https://jayceh.lanzoub.com/b0swomphe)下载，密码：midi  
 
@@ -17,7 +17,7 @@
 
 # 懒人包
 无需下载AutoX.js及源文件，使用编译完成的安装包
-- 下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI.apk)文件，授予相关权限后直接使用
+- 下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.4/midi.V1.0.4.apk)文件，授予相关权限后直接使用
 - 如midi设备支持蓝牙连接，可下载安装蓝牙midi插件[MIDI+BTLE.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI+BTLE.apk)进行蓝牙连接
 - 如无法下载，可使用[蓝奏云](https://jayceh.lanzoub.com/b0swomphe)下载懒人包，密码：midi
 
