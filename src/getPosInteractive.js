@@ -1,4 +1,4 @@
-function getPosInteractive(promptText) {
+function getPosInteractive(promptText,type) {
     let gotPos = false;
     //pos[0] 宽, pos[1] 高
     let pos = [];
@@ -6,8 +6,28 @@ function getPosInteractive(promptText) {
     let confirmed = false;
     let fullScreenWindowRequestClose = false;
     let canvasDebugCounter = 0;
-    let deviceWidth = context.getResources().getDisplayMetrics().widthPixels;
-    let deviceHeight = context.getResources().getDisplayMetrics().heightPixels;
+    console.log("type：" + type);
+    if (type == 0 || type == 2){
+        //全面屏和右侧异形屏不需要计算偏移量，宽高即为悬浮窗大小
+        var deviceWidth = context.getResources().getDisplayMetrics().widthPixels;
+        var deviceHeight = context.getResources().getDisplayMetrics().heightPixels;
+        if(deviceWidth < deviceHeight){
+            //反正都是横屏游戏，直接强制长的为宽，避免软件未旋转过去，导致宽高未更新
+            deviceWidth = context.getResources().getDisplayMetrics().heightPixels;
+            deviceHeight = context.getResources().getDisplayMetrics().widthPixels;
+        }
+    }else if(type == 1){
+        var deviceWidth = device.width;//获取设备的才能计算偏移量
+        var deviceHeight = device.height;
+        if(deviceWidth < deviceHeight){
+            //强制宽高
+            deviceWidth = device.height;
+            deviceHeight = device.width;
+        }
+        console.log("w"+deviceWidth);
+        console.log("h"+deviceHeight);
+    }
+    
 
     console.log("getPosInteractive(): " + promptText);
     //提示和确认按钮的框
@@ -44,6 +64,15 @@ function getPosInteractive(promptText) {
         const h = canvas.getHeight();
         const woffset = deviceWidth - w; //长边的偏移量
         const hoffset = deviceHeight - h; //短边的偏移量
+        
+        //判断是否需要偏移，且偏移量是否错误。设备或悬浮窗宽度获取错误
+        if (type == 1 && woffset==0 && hoffset==0){
+            const resources = context.getResources();
+            const status_bar_height = resources.getDimensionPixelSize(
+                resources.getIdentifier("status_bar_height", "dimen", "android")
+            );//获取状态栏宽度，即为偏移量
+            woffset = status_bar_height;
+        }
         const centerCircleRadius = 10;
         let paint = new Paint();
         if (canvasDebugCounter != -1 && canvasDebugCounter < 60) {
