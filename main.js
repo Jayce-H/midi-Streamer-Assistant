@@ -12,7 +12,7 @@ try {
     console.error(e);
 }
 
-const scriptVersion = 25;
+const scriptVersion = 26;
 
 //应用名称, 稍后会被初始化
 let appName = undefined;
@@ -57,6 +57,7 @@ const MusicLoaderDataType = {
 var cachedKeyPos = null;//自定义坐标的数值
 
 var keyStates = new Map();//实时保存midi键按下弹起状态，长按用
+var type = null ;//异形屏适配:0平板全屏，1左侧挖孔刘海药丸，2翻转后位于屏幕右侧
 
 /**
  * @brief 加载配置文件
@@ -173,8 +174,7 @@ function setupMidiStream() {
         if (devNames.length == 0) {
             if (!dialogs.confirm(
                 "错误", 
-                "没有找到MIDI设备, 点击确定重试, 点击取消退出\n" + 
-                "提示: 如果想使用蓝牙MIDI设备, 请根据使用说明中相关教程安装插件进行连接" 
+                "没有找到MIDI设备, 点击确定重试, 点击取消退出" 
                 )) {
                 return null;
             }
@@ -253,8 +253,8 @@ function saveUserGameProfile() {
 };
 
 function runClickPosSetup() {
-    let pos1 = getPosInteractive("最左上按键的中心");
-    let pos2 = getPosInteractive("最右下按键的中心");
+    let pos1 = getPosInteractive("最左上按键的中心",type);
+    let pos2 = getPosInteractive("最右下按键的中心",type);
 
     console.log("自定义坐标:左上[" + pos1.x + "," + pos1.y + "],右下[" + pos2.x + "," + pos2.y + "]");
 
@@ -288,8 +288,8 @@ function initialize() {
     }
     if (readGlobalConfig("lastVersion", 0) != scriptVersion) {
         //第一次启动，初始化设置
-        toast("初始化设置..");
-
+        toast("版本变更，正在初始化设置..");
+        configuration.clear();
         if (readGlobalConfig("skipInit", -1) == -1) setGlobalConfig("skipInit", true);
         if (readGlobalConfig("skipBlank5s", -1) == -1) setGlobalConfig("skipBlank5s", false);
         if (readGlobalConfig("waitForGame", -1) == -1) setGlobalConfig("waitForGame", true);
@@ -312,9 +312,8 @@ function main() {
         toastLog('悬浮窗权限已开启');
     }
 
-    let titleStr = "点击调整位置大小";
+    let titleStr = "点击文字调整位置";
     console.info(titleStr);
-    let visualizerWindow = null;
     /**
      * @type {Array<import("./src/players").PlayerBase>}
      */
@@ -326,14 +325,16 @@ function main() {
      * @type {any}
      */
     let controlWindow = floaty.window(
-        <frame gravity="left|top" w="90dp" h="50dp" margin="0dp" id="controlWindowFrame" visibility="gone">
-            <vertical bg="#55ffffff" w="*" h="auto" margin="0dp">
-                <horizontal w="*" h="auto" margin="0dp">
-                    <text id="musicTitleText" bg="#55ffffff" text="(点击调整位置大小)" ellipsize="marquee" singleLine="true" layout_gravity="left" textSize="14sp" margin="0 0 3 0" layout_weight="1" />
-                    <button id="hideBtn" style="Widget.AppCompat.Button.Borderless" w="20dp" layout_height='20dp' text="➖" textSize="14sp" margin="0dp" padding="0dp" />
+        <frame gravity="left|top" w="120dp" h="50dp" margin="0dp" id="controlWindowFrame" visibility="gone">
+            <vertical bg="#55ffffff" w="120dp" h="auto" margin="0dp">
+                <horizontal w="120dp" h="auto" margin="0dp">
+                    <text id="musicTitleText" bg="#55ffffff" w="120dp" text="点击文字调整位置" ellipsize="marquee" singleLine="true" layout_gravity="center" textSize="14sp" margin="0 0 0 0" layout_weight="1" />
                 </horizontal>
-                <horizontal bg="#88ffffff" w="*" h="auto" margin="0dp" gravity="center">
-                    <button id="globalConfigBtn" style="Widget.AppCompat.Button.Borderless" w="30dp" h='30dp' text="⚙" textSize="20sp" margin="0dp" padding="0dp" />
+                <horizontal bg="#88ffffff" w="120dp" h="auto" margin="0dp" gravity="left">
+                    <button id="gameBtn" style="Widget.AppCompat.Button.Borderless" w="30dp" h='30dp' text="🎮" textSize="20sp" margin="0dp" padding="0dp" />
+                    <button id="posBtn" style="Widget.AppCompat.Button.Borderless" w="30dp" h='30dp' text="📍" textSize="20sp" margin="0dp" padding="0dp" />
+                    <button id="midiBtn" style="Widget.AppCompat.Button.Borderless" w="30dp" h='30dp' text="🎹" textSize="20sp" margin="0dp" padding="0dp" />
+                    <button id="globalConfigBtn" style="Widget.AppCompat.Button.Borderless" w="30dp" h='30dp' text="⚙️" textSize="20sp" margin="0dp" padding="0dp" />
                 </horizontal>
             </vertical>
         </frame>
@@ -357,10 +358,17 @@ function main() {
         controlWindow.musicTitleText.setSelected(true);
     });
 
-    controlWindow.globalConfigBtn.click(() => { evt.emit("globalConfigBtnClick"); });
-    controlWindow.hideBtn.click(() => {
-        evt.emit("hideBtnClick");
+    controlWindow.gameBtn.click(() => {
+        evt.emit("gameBtnClick");
     });
+    controlWindow.posBtn.click(() => {
+        evt.emit("posBtnClick");
+    });
+    controlWindow.midiBtn.click(() => {
+        evt.emit("midiBtnClick");
+    });
+    
+    controlWindow.globalConfigBtn.click(() => { evt.emit("globalConfigBtnClick"); });
 
     //悬浮窗位置/大小调节
     let controlWindowPosition = readGlobalConfig("controlWindowPosition", [device.width / 4, device.height / 5 ]);
@@ -392,18 +400,7 @@ function main() {
         }
     });
 
-    let visualizerWindowRequestClose = false;
-
-    function visualizerWindowClose() {
-        if (visualizerWindow == null) return;
-        visualizerWindowRequestClose = true;
-        sleep(200);
-        visualizerWindow.close();
-        visualizerWindowRequestClose = false;
-    }
-
     function exitApp() {
-        visualizerWindowClose();
         if(instructWindow != null) instructWindow.close();
         controlWindow.close();
         threads.shutDownAll();
@@ -416,92 +413,108 @@ function main() {
     var diytime = 20;//默认10ms
     var diysleeptime = 0;//默认5ms
 
+    evt.on("gameBtnClick", () => {
+        //目标游戏
+        let configList = gameProfile.getConfigNameList();
+        let sel = /** @type {Number} */ (dialogs.select("选择目标游戏...", configList));
+        let configName = readGlobalConfig("activeConfigName",null);
+        if (sel == -1) {
+            if (configName == null){
+                toastLog("未选择游戏");
+                return;
+            }
+            toastLog("设置没有改变");
+            return;
+        }
+        else if (sel == 15){
+            diy = true;
+            console.log("口袋琴自定义");
+            configName = configList[sel];
+        }else {
+            diy = false;
+            configName = configList[sel];
+        }
+        setGlobalConfig("activeConfigName", configName);
+        setGlobalConfig("lastConfigName", configName);
+        gameProfile.setConfigByName(configName);
+        console.log("目标游戏已设置为: " + configName);
+        //目标乐器
+        let instrumentList = gameProfile.getCurrentAvailableVariants();
+        if (instrumentList == null || instrumentList.length == 0) {
+            throw new Error("当前游戏没有可用的乐器!");
+        } else if (instrumentList.length == 1) {
+            gameProfile.setCurrentVariantDefault();
+            setGlobalConfig("lastVariantName", gameProfile.getCurrentVariantTypeName());
+        } else {
+            let nameList = instrumentList.map((variant) => variant.variantName);
+            let sel = /** @type {Number} */ (dialogs.select("选择目标乐器...", nameList));
+            if (sel == -1) {
+                toastLog("设置没有改变");
+            }
+            let typeName = instrumentList[sel].variantType;
+            gameProfile.setCurrentVariantByTypeName(typeName);
+            setGlobalConfig("lastVariantName", typeName);
+            console.log("目标乐器已设置为: " + typeName);
+        }
+        //目标键位
+        let keyLayoutList = gameProfile.getCurrentAvailableKeyLayouts();
+        if (keyLayoutList == null || keyLayoutList.length == 0) {
+            throw new Error("当前游戏没有可用的键位!");
+        } else if (keyLayoutList.length == 1) {
+            gameProfile.setCurrentKeyLayoutDefault();
+            setGlobalConfig("lastKeyTypeName", gameProfile.getCurrentKeyLayoutTypeName());
+        } else {
+            let allKeyLayoutList = gameProfile.getAllKeyLayouts();
+            let nameList = keyLayoutList.map((keyLayout) => allKeyLayoutList[keyLayout].displayName);
+            let sel = /** @type {Number} */ (dialogs.select("选择目标键位...", nameList));
+            if (sel == -1) {
+                toastLog("设置没有改变");
+            }
+            let typeName = keyLayoutList[sel];
+            gameProfile.setCurrentKeyLayoutByTypeName(typeName);
+            setGlobalConfig("lastKeyTypeName", typeName);
+            console.log("目标键位已设置为: " + typeName);
+        }
+        toastLog("设置已保存");
+        titleStr = "当前配置: " + getTargetTriple();
+        ui.run(() => {
+            controlWindow.musicTitleText.setText(titleStr);
+        });
+    });
+    evt.on("posBtnClick", () => {
+        //设置坐标
+        type = readGlobalConfig("type",null);
+        if (type == null || type == -1){
+            type = (dialogs.select("异形屏适配：水滴屏 刘海屏 挖孔屏",["全面屏 或 无挖孔摄像头的平板","位于左侧","手机翻转后位于右侧"]));
+            setGlobalConfig("type",type);
+            console.log("异形屏设置为： "+ type);
+        }
+        if (type > -1){
+            runClickPosSetup();
+        }
+    });
+    evt.on("midiBtnClick", () => {
+        //MIDI串流
+        evt.emit("midiStreamStart");
+    });
     evt.on("globalConfigBtnClick", () => {
-        for (let player of selectedPlayers)
-            player.pause();
-        switch (dialogs.select("设置",
-            ["🎮选择游戏/乐器",
-                "📍设置坐标",
-                "📲 MIDI串流演奏",
-                "⚙️检查权限",
-                "🔍口袋琴自定义",
-                "⏳延音设置",
+        switch (dialogs.select("高级设置",
+            ["📱异形屏设置",
+             "🔍口袋琴自定义",
+             "⏳延音设置",
+             "⚠️检查权限",
             ])) {
             case -1:
                 break;
             case 0:
-                //目标游戏
-                let configList = gameProfile.getConfigNameList();
-                let sel = /** @type {Number} */ (dialogs.select("选择目标游戏...", configList));
-                if (sel == -1) {
-                    toastLog("设置没有改变");
+                type = (dialogs.select("异形屏适配：水滴屏 刘海屏 挖孔屏",["全面屏 或 无挖孔摄像头的平板","位于左侧","手机翻转后位于右侧"]));
+                if (type == -1){
                     break;
                 }
-                else if (sel == 15){
-                    diy = true;
-                    console.log("口袋琴自定义");
-                }else {
-                    diy = false;
-                }
-                let configName = configList[sel];
-                setGlobalConfig("activeConfigName", configName);
-                setGlobalConfig("lastConfigName", configName);
-                gameProfile.setConfigByName(configName);
-                console.log("目标游戏已设置为: " + configName);
-                //目标乐器
-                let instrumentList = gameProfile.getCurrentAvailableVariants();
-                if (instrumentList == null || instrumentList.length == 0) {
-                    throw new Error("当前游戏没有可用的乐器!");
-                } else if (instrumentList.length == 1) {
-                    gameProfile.setCurrentVariantDefault();
-                    setGlobalConfig("lastVariantName", gameProfile.getCurrentVariantTypeName());
-                } else {
-                    let nameList = instrumentList.map((variant) => variant.variantName);
-                    let sel = /** @type {Number} */ (dialogs.select("选择目标乐器...", nameList));
-                    if (sel == -1) {
-                        toastLog("设置没有改变");
-                        break;
-                    }
-                    let typeName = instrumentList[sel].variantType;
-                    gameProfile.setCurrentVariantByTypeName(typeName);
-                    setGlobalConfig("lastVariantName", typeName);
-                    console.log("目标乐器已设置为: " + typeName);
-                }
-                //目标键位
-                let keyLayoutList = gameProfile.getCurrentAvailableKeyLayouts();
-                if (keyLayoutList == null || keyLayoutList.length == 0) {
-                    throw new Error("当前游戏没有可用的键位!");
-                } else if (keyLayoutList.length == 1) {
-                    gameProfile.setCurrentKeyLayoutDefault();
-                    setGlobalConfig("lastKeyTypeName", gameProfile.getCurrentKeyLayoutTypeName());
-                } else {
-                    let allKeyLayoutList = gameProfile.getAllKeyLayouts();
-                    let nameList = keyLayoutList.map((keyLayout) => allKeyLayoutList[keyLayout].displayName);
-                    let sel = /** @type {Number} */ (dialogs.select("选择目标键位...", nameList));
-                    if (sel == -1) {
-                        toastLog("设置没有改变");
-                        break;
-                    }
-                    let typeName = keyLayoutList[sel];
-                    gameProfile.setCurrentKeyLayoutByTypeName(typeName);
-                    setGlobalConfig("lastKeyTypeName", typeName);
-                    console.log("目标键位已设置为: " + typeName);
-                }
-
-                toastLog("设置已保存");
+                setGlobalConfig("type",type);
+                console.log("异形屏设置为： "+ type);
                 break;
-            case 1: //设置坐标
-                runClickPosSetup();
-                break;
-            case 2: //MIDI串流
-                visualizerWindowClose();
-                evt.emit("midiStreamStart");
-                //exitApp();
-                break;
-            case 3://权限
-                checkEnableAccessbility();
-                break;
-            case 4://diy
+            case 1://diy
                 //切换配置至口袋琴自定义
                 if (diy == false ){
                     setGlobalConfig("activeConfigName", "口袋琴自定义");
@@ -532,8 +545,12 @@ function main() {
                     diypos(diyx , diyy);
                 }
                 console.log("自定义完成");
+                titleStr = "当前配置: " + getTargetTriple();
+                ui.run(() => {
+                    controlWindow.musicTitleText.setText(titleStr);
+                });
                 break;
-            case 5://延音开关 自定义延音频率以适配不同游戏 及 防止低配手机卡顿
+            case 2://延音开关 自定义延音频率以适配不同游戏 及 防止低配手机卡顿
                 if (diybool){
                     let sel =(dialogs.select("延音设置",["🔴已开启","高级选项"]));
                     if (sel == 0){
@@ -583,11 +600,10 @@ function main() {
                         break;
                     }
                 }
+            case 3:
+                checkEnableAccessbility();
+                break;
         };
-        titleStr = "当前配置: " + getTargetTriple();
-        ui.run(() => {
-            controlWindow.musicTitleText.setText(titleStr);
-        });
     });
     evt.on("midiStreamStart", () => {
         const stream = setupMidiStream();
@@ -644,11 +660,6 @@ function main() {
                 };
             }
         });
-        evt.on("hideBtnClick", () => {
-            stream.close();
-            controlWindowVisible = false;
-            controlWindowSetVisibility(false);
-        });
 
         threads.start(function(){
             while (true){//此线程一旦启动则不能关闭，否则线程失效且会重复启动
@@ -683,10 +694,6 @@ function main() {
             }
         });
 
-    });
-    evt.on("hideBtnClick", () => {
-        controlWindowVisible = false;
-        controlWindowSetVisibility(false);
     });
     evt.on("exitApp", () => {
         exitApp();
@@ -731,7 +738,7 @@ function diypos(diyx,diyy){
     let indexkey =10- diyx * 5 + diyy;
     diyx++;
     diyy++;
-    let pos = getPosInteractive("定位第" + diyx + "行 第" + diyy +"个按键");
+    let pos = getPosInteractive("定位第" + diyx + "行 第" + diyy +"个按键",type);
     cachedKeyPos[indexkey] = [Math.round(pos.x), Math.round(pos.y)];
     console.log("自定义 第" + diyx + "行第" + diyy +"个按键 坐标：" + cachedKeyPos[indexkey])
     setGlobalConfig("diyPos",cachedKeyPos);
