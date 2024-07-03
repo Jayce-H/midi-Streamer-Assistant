@@ -17,9 +17,16 @@
 
 # 懒人包
 无需下载AutoX.js及源文件，使用编译完成的安装包
-- 下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.4/midi.V1.0.4.apk)文件，授予相关权限后直接使用
+- 下载安装编译好的[MIDI.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.4/midi.V1.0.5.apk)文件，授予相关权限后直接使用
 - 如midi设备支持蓝牙连接，可下载安装蓝牙midi插件[MIDI+BTLE.apk](https://github.com/Jayce-H/midi-Streamer-Assistant/releases/download/1.0.0/MIDI+BTLE.apk)进行蓝牙连接
 - 如无法下载，可使用[蓝奏云](https://jayceh.lanzoub.com/b0swomphe)下载懒人包，密码：midi
 
 ## 演示视频
-https://www.bilibili.com/video/BV1iH4y1V7oy
+[https://www.bilibili.com/video/BV1iH4y1V7oy](https://www.bilibili.com/video/BV1iH4y1V7oy)
+
+[https://www.bilibili.com/video/BV1Nw4m1e77M/](https://www.bilibili.com/video/BV1Nw4m1e77M/)
+
+#
+[https://v.douyin.com/i6Hm7AKQ/](https://v.douyin.com/i6Hm7AKQ/)
+
+[https://v.douyin.com/i6HuHkGu/](https://v.douyin.com/i6HuHkGu/)
