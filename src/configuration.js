@@ -28,6 +28,15 @@ function Configuration() {
             return res;
         }
     };
+
+    /**
+     * 清空配置项
+     * @returns {number} - 返回0表示设置成功(总是成功?)
+     */
+    this.clear = function () {
+        globalConfig.clear();
+        return 0;
+    }
 }
 
 module.exports = new Configuration();
