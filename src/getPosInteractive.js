@@ -62,16 +62,17 @@ function getPosInteractive(promptText,type) {
         const PorterDuff = android.graphics.PorterDuff;
         const w = canvas.getWidth();
         const h = canvas.getHeight();
-        const woffset = deviceWidth - w; //长边的偏移量
+        //const woffset = deviceWidth - w; //长边的偏移量
         const hoffset = deviceHeight - h; //短边的偏移量
         
-        //判断是否需要偏移，且偏移量是否错误。设备或悬浮窗宽度获取错误
-        if (type == 1 && woffset==0 && hoffset==0){
+        if (type == 1){
             const resources = context.getResources();
             const status_bar_height = resources.getDimensionPixelSize(
                 resources.getIdentifier("status_bar_height", "dimen", "android")
             );//获取状态栏宽度，即为偏移量
-            woffset = status_bar_height;
+            var woffset = status_bar_height;
+        }else {
+            var woffset = 0;
         }
         const centerCircleRadius = 10;
         let paint = new Paint();
